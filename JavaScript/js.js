@@ -1,4 +1,5 @@
 var navePlayer1, navePlayer2;
+var projectiles = [];
 
 function startGame() {
     myGameArea.start();
@@ -15,11 +16,23 @@ var myGameArea = {
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.interval = setInterval(updateGameArea, 20);
 
+
+
         window.addEventListener('keydown', function (e) {
             myGameArea.keys = (myGameArea.keys || []);
             myGameArea.keys[e.keyCode] = (e.type == "keydown")
 
+            // Disparar cuando se presiona la tecla correspondiente
+            if (e.keyCode === 32) { // Espacio para nave 1
+                disparar(navePlayer1.x + navePlayer1.width / 2, navePlayer1.y, "pink");
+            }
+            if (e.keyCode === 96) { // 0 del numpad para nave 2
+                disparar(navePlayer2.x + navePlayer2.width / 2, navePlayer2.y, "green");
+            }
+
         })
+
+
 
         window.addEventListener('keyup', function (e) {
             myGameArea.keys[e.keyCode] = (e.type == "keydown")
@@ -53,6 +66,33 @@ function component(width, height, color, x, y) {
 }
 
 
+// Clase de proyectiles
+function Projectile(x, y, color) {
+    this.width = 5;
+    this.height = 10;
+    this.x = x - this.width / 2; // Centrar el disparo
+    this.y = y;
+    this.speedY = -10; // Dirección hacia arriba
+    this.color = color;
+
+    this.update = function () {
+        context = myGameArea.context;
+        context.fillStyle = color;
+        context.fillRect(this.x, this.y, this.width, this.height);
+    }
+
+    this.newPos = function () {
+        this.y += this.speedY;
+
+    }
+
+}
+
+// Funcion disparo
+function disparar(x, y, color){
+    projectiles.push(new Projectile(x, y, color));
+}
+
 
 function updateGameArea() {
     myGameArea.clear();
@@ -71,4 +111,13 @@ function updateGameArea() {
     navePlayer2.newPos();
     navePlayer2.update();
 
+    
+    // Actualizar proyectiles
+    for (let i = 0; i < projectiles.length; i++) {
+        projectiles[i].newPos();
+        projectiles[i].update();
+    }
+
+    // Eliminar proyectiles fuera del canvas
+    projectiles = projectiles.filter(p => p.y > 0);
 }
