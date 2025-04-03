@@ -15,8 +15,6 @@ var myGameArea = {
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.interval = setInterval(updateGameArea, 20);
 
-
-
         window.addEventListener('keydown', function (e) {
             myGameArea.keys = (myGameArea.keys || []);
             myGameArea.keys[e.keyCode] = (e.type == "keydown")
@@ -55,6 +53,7 @@ function component(width, height, color, x, y) {
 }
 
 
+
 function updateGameArea() {
     myGameArea.clear();
     
@@ -64,5 +63,12 @@ function updateGameArea() {
     if (myGameArea.keys && myGameArea.keys[68]){navePlayer1.speedX = 7;}  // D
     navePlayer1.newPos();
     navePlayer1.update();
+
+    // Movimiento nave 2 (Flechas Izquierda y Derecha)
+    navePlayer2.speedX = 0;
+    if (myGameArea.keys && myGameArea.keys[37]){navePlayer2.speedX = -7;} // Flecha Izquierda
+    if (myGameArea.keys && myGameArea.keys[39]){navePlayer2.speedX = 7;}  // Flecha Derecha
+    navePlayer2.newPos();
+    navePlayer2.update();
 
 }
