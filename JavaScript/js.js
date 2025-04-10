@@ -5,20 +5,10 @@ var vidasJ2 = 5; // Vidas del jugador 2
 var enemigosEliminadosJ1 = 0; // Contador de enemigos eliminados por el jugador 1
 var enemigosEliminadosJ2 = 0; // Contador de enemigos eliminados por el jugador 2
 
-// Variables para el movimiento de los cuadrados
-var squareX = 0; // Posición X inicial de los cuadrados
-var squareCount = 11; // Número de cuadrados en la fila
-var squareRows = 5; // Número de filas de cuadrados
-var squareSize = 30; // Tamaño de cada cuadrado
-var squareSpeed = 4; // Velocidad de movimiento de los cuadrados
-var padding = 20; // Espacio entre los cuadrados
-var squareDirection = 1; // Dirección de movimiento (1 = derecha, -1 = izquierda)
-
 function startGame() {
     myGameArea.start();
     navePlayer1 = new component(30, 30, "pink", 1000, 750);
     navePlayer2 = new component(30, 30, "green", 600, 750);
-    dibujarCuadrados(); // Llamar a la función para dibujar los cuadrados
 }
 
 var myGameArea = {
@@ -74,45 +64,6 @@ function component(width, height, color, x, y) {
     }
 }
 
-function dibujarCuadrados() {
-    var context = myGameArea.context;
-
-    var startY = 50; // Posición Y de los cuadrados
-
-    for (var i = 0; i < squareCount; i++) { // Dibujar los cuadrados en la fila
-        for (var j = 0; j < squareRows; j++) { // Dibujar los cuadrados en las filas
-            context.fillStyle = "blue"; // Color de los cuadrados
-            context.fillRect(squareX + i * (squareSize + padding), startY + j * (squareSize + padding), squareSize, squareSize);
-        }
-    }
-}
-
-function moverCuadrados() {
-    // Mover todos los cuadrados en la dirección actual
-    squareX += squareSpeed * squareDirection;
-
-    // Calcular el ancho total del grupo de cuadrados
-    var totalWidth = squareCount * (squareSize + padding) - padding; // Ajustar el total para el padding
-
-    // Cambiar dirección si se sale del canvas
-    if (squareX < 0 || squareX + totalWidth > myGameArea.canvas.width) {
-        squareDirection *= -1; // Cambiar la dirección
-    }
-    var squareSize = 30; // Tamaño de cada cuadrado
-    var padding = 10; // Espacio entre los cuadrados
-    var startX = (myGameArea.canvas.width - (11 * (squareSize + padding) - padding)) / 2; // Centrar en el eje X
-    var startY = 50; // Posición Y de los cuadrados
-
-    for (var i = 0; i < 11; i++) { // 11 columnas
-        for (var j = 0; j < 5; j++) { // 5 filas
-            var x = startX + i * (squareSize + padding);
-            var y = startY + j * (squareSize + padding);
-            context.fillStyle = "blue"; // Color de los cuadrados
-            context.fillRect(x, y, squareSize, squareSize);
-        }
-    }
-}
-
 function Projectile(x, y, color) {
     this.width = 5;
     this.height = 10;
@@ -138,8 +89,6 @@ function disparar(x, y, color) {
 
 function updateGameArea() {
     myGameArea.clear();
-
-    dibujarCuadrados(); // Redibujar los cuadrados en cada actualización
 
     // Movimiento nave 1 (A y D)
     navePlayer1.speedX = 0;
