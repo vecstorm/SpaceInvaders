@@ -4,6 +4,7 @@ var vidasJ1 = 5; // Vidas del jugador 1
 var vidasJ2 = 5; // Vidas del jugador 2
 var enemigosEliminadosJ1 = 0; // Contador de enemigos eliminados por el jugador 1
 var enemigosEliminadosJ2 = 0; // Contador de enemigos eliminados por el jugador 2
+<<<<<<< HEAD
 
 // Variables para el movimiento de los cuadrados
 var squareX = 0; // Posición X inicial de los cuadrados
@@ -13,12 +14,17 @@ var squareSize = 30; // Tamaño de cada cuadrado
 var squareSpeed = 4; // Velocidad de movimiento de los cuadrados
 var padding = 20; // Espacio entre los cuadrados
 var squareDirection = 1; // Dirección de movimiento (1 = derecha, -1 = izquierda)
+=======
+>>>>>>> Stationary_enemys
 
 function startGame() {
     myGameArea.start();
     navePlayer1 = new component(30, 30, "pink", 1000, 750);
     navePlayer2 = new component(30, 30, "green", 600, 750);
+<<<<<<< HEAD
     
+=======
+>>>>>>> Stationary_enemys
     dibujarCuadrados(); // Llamar a la función para dibujar los cuadrados
 }
 
@@ -77,6 +83,7 @@ function component(width, height, color, x, y) {
 
 function dibujarCuadrados() {
     var context = myGameArea.context;
+<<<<<<< HEAD
     var startY = 50; // Posición Y de los cuadrados
 
     for (var i = 0; i < squareCount; i++) { // Dibujar los cuadrados en la fila
@@ -99,6 +106,22 @@ function moverCuadrados() {
         squareDirection *= -1; // Cambiar la dirección
     }
 }
+=======
+    var squareSize = 30; // Tamaño de cada cuadrado
+    var padding = 10; // Espacio entre los cuadrados
+    var startX = (myGameArea.canvas.width - (11 * (squareSize + padding) - padding)) / 2; // Centrar en el eje X
+    var startY = 50; // Posición Y de los cuadrados
+
+    for (var i = 0; i < 11; i++) { // 11 columnas
+        for (var j = 0; j < 5; j++) { // 5 filas
+            var x = startX + i * (squareSize + padding);
+            var y = startY + j * (squareSize + padding);
+            context.fillStyle = "blue"; // Color de los cuadrados
+            context.fillRect(x, y, squareSize, squareSize);
+        }
+    }
+}
+>>>>>>> Stationary_enemys
 
 function Projectile(x, y, color) {
     this.width = 5;
@@ -125,7 +148,10 @@ function disparar(x, y, color) {
 
 function updateGameArea() {
     myGameArea.clear();
+<<<<<<< HEAD
     moverCuadrados(); // Mover los cuadrados
+=======
+>>>>>>> Stationary_enemys
     dibujarCuadrados(); // Redibujar los cuadrados en cada actualización
 
     // Movimiento nave 1 (A y D)
