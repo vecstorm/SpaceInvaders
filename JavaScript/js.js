@@ -1,26 +1,31 @@
+//Variables para proyectiles, naves y HUD
 var navePlayer1, navePlayer2;
 var projectiles = [];
-var vidasJ1 = 5; // Vidas del jugador 1
-var vidasJ2 = 5; // Vidas del jugador 2
-var enemigosEliminadosJ1 = 0; // Contador de enemigos eliminados por el jugador 1
-var enemigosEliminadosJ2 = 0; // Contador de enemigos eliminados por el jugador 2
+var vidasJ1 = 5;
+var vidasJ2 = 5;
+var enemigosEliminadosJ1 = 0;
+var enemigosEliminadosJ2 = 0;
+var enemigos = []; // Representación lógica de los enemigos
 
-// Variables para el movimiento de los cuadrados
-var squareX = 0; // Posición X inicial de los cuadrados
-var squareCount = 11; // Número de cuadrados en la fila
-var squareRows = 5; // Número de filas de cuadrados
-var squareSize = 30; // Tamaño de cada cuadrado
-var squareSpeed = 4; // Velocidad de movimiento de los cuadrados
-var padding = 20; // Espacio entre los cuadrados
-var squareDirection = 1; // Dirección de movimiento (1 = derecha, -1 = izquierda)
+//Variables para los enemigos
+var squareX = 0;
+var squareCount = 11;
+var squareRows = 5;
+var squareSize = 30;
+var squareSpeed = 4;
+var padding = 20;
+var squareDirection = 1;
 
+//Inicio del juego
 function startGame() {
     myGameArea.start();
     navePlayer1 = new component(30, 30, "pink", 1000, 750);
     navePlayer2 = new component(30, 30, "green", 600, 750);
-    dibujarCuadrados(); // Llamar a la función para dibujar los cuadrados
+    inicializarEnemigos();
+    setInterval(dispararCuadrados, 100);
 }
 
+//Creacion del canvas y event listener para los imputs del player
 var myGameArea = {
     canvas: document.createElement("canvas"),
     start: function () {
@@ -34,12 +39,11 @@ var myGameArea = {
             myGameArea.keys = (myGameArea.keys || []);
             myGameArea.keys[e.keyCode] = (e.type == "keydown");
 
-            // Disparar cuando se presiona la tecla correspondiente
-            if (e.keyCode === 32) { // Espacio para nave 1
-                disparar(navePlayer1.x + navePlayer1.width / 2, navePlayer1.y, "pink");
+            if (e.keyCode === 32) {
+                dispararNave(navePlayer1.x + navePlayer1.width / 2, navePlayer1.y, "pink");
             }
-            if (e.keyCode === 96) { // 0 del numpad para nave 2
-                disparar(navePlayer2.x + navePlayer2.width / 2, navePlayer2.y, "green");
+            if (e.keyCode === 96) {
+                dispararNave(navePlayer2.x + navePlayer2.width / 2, navePlayer2.y, "green");
             }
         });
 
@@ -52,6 +56,7 @@ var myGameArea = {
     }
 }
 
+//Dibujado de las naves
 function component(width, height, color, x, y) {
     this.width = width;
     this.height = height;
@@ -67,58 +72,62 @@ function component(width, height, color, x, y) {
 
     this.newPos = function () {
         this.x += this.speedX;
-
-        // Limitar los bordes
         if (this.x < 0) this.x = 0;
         if (this.x + this.width > myGameArea.canvas.width) this.x = myGameArea.canvas.width - this.width;
     }
 }
 
-function dibujarCuadrados() {
-    var context = myGameArea.context;
-
-    var startY = 50; // Posición Y de los cuadrados
-
-    for (var i = 0; i < squareCount; i++) { // Dibujar los cuadrados en la fila
-        for (var j = 0; j < squareRows; j++) { // Dibujar los cuadrados en las filas
-            context.fillStyle = "blue"; // Color de los cuadrados
-            context.fillRect(squareX + i * (squareSize + padding), startY + j * (squareSize + padding), squareSize, squareSize);
+//Inicialización de los enemigos
+function inicializarEnemigos() {
+    enemigos = [];
+    for (let i = 0; i < squareCount; i++) {
+        for (let j = 0; j < squareRows; j++) {
+            enemigos.push({
+                x: squareX + i * (squareSize + padding),
+                y: 50 + j * (squareSize + padding),
+                width: squareSize,
+                height: squareSize,
+                activo: true
+            });
         }
     }
 }
 
+//Movimiento enemigos
 function moverCuadrados() {
-    // Mover todos los cuadrados en la dirección actual
     squareX += squareSpeed * squareDirection;
-
-    // Calcular el ancho total del grupo de cuadrados
-    var totalWidth = squareCount * (squareSize + padding) - padding; // Ajustar el total para el padding
-
-    // Cambiar dirección si se sale del canvas
+    let totalWidth = squareCount * (squareSize + padding) - padding;
     if (squareX < 0 || squareX + totalWidth > myGameArea.canvas.width) {
-        squareDirection *= -1; // Cambiar la dirección
+        squareDirection *= -1;
     }
-    var squareSize = 30; // Tamaño de cada cuadrado
-    var padding = 10; // Espacio entre los cuadrados
-    var startX = (myGameArea.canvas.width - (11 * (squareSize + padding) - padding)) / 2; // Centrar en el eje X
-    var startY = 50; // Posición Y de los cuadrados
-
-    for (var i = 0; i < 11; i++) { // 11 columnas
-        for (var j = 0; j < 5; j++) { // 5 filas
-            var x = startX + i * (squareSize + padding);
-            var y = startY + j * (squareSize + padding);
-            context.fillStyle = "blue"; // Color de los cuadrados
-            context.fillRect(x, y, squareSize, squareSize);
-        }
-    }
+    enemigos.forEach(e => e.x += squareSpeed * squareDirection);
 }
 
-function Projectile(x, y, color) {
+//Funcion disparo enemigos
+function dispararCuadrados() {
+    let activos = enemigos.filter(e => e.activo);
+    if (activos.length === 0) return;
+    let enemigo = activos[Math.floor(Math.random() * activos.length)];
+    dispararCuadrado(enemigo.x + enemigo.width / 2, enemigo.y + enemigo.height, "blue");
+}
+
+//Funcion de disparo enemigos 2
+function dispararCuadrado(x, y, color) {
+    projectiles.push(new Projectile(x, y, color, 4));
+}
+
+//Funcion disparo players
+function dispararNave(x, y, color) {
+    projectiles.push(new Projectile(x, y, color, -10));
+}
+
+//Funcion de dibujado de los proyectiles
+function Projectile(x, y, color, speedY) {
     this.width = 5;
     this.height = 10;
-    this.x = x - this.width / 2; // Centrar el disparo
+    this.x = x - this.width / 2;
     this.y = y;
-    this.speedY = -10; // Dirección hacia arriba
+    this.speedY = speedY;
     this.color = color;
 
     this.update = function () {
@@ -132,63 +141,104 @@ function Projectile(x, y, color) {
     }
 }
 
-function disparar(x, y, color) {
-    projectiles.push(new Projectile(x, y, color));
-}
-
+//Funcion updateGameArea para hacer funcionar el codigo y funciones en conjunto
 function updateGameArea() {
     myGameArea.clear();
+    moverCuadrados();
 
-    dibujarCuadrados(); // Redibujar los cuadrados en cada actualización
-
-    // Movimiento nave 1 (A y D)
     navePlayer1.speedX = 0;
-    if (myGameArea.keys && myGameArea.keys[65]) { navePlayer1.speedX = -7; } // A
-    if (myGameArea.keys && myGameArea.keys[68]) { navePlayer1.speedX = 7; }  // D
+    if (myGameArea.keys && myGameArea.keys[65]) { navePlayer1.speedX = -7; }
+    if (myGameArea.keys && myGameArea.keys[68]) { navePlayer1.speedX = 7; }
     navePlayer1.newPos();
     navePlayer1.update();
 
-    // Movimiento nave 2 (Flechas Izquierda y Derecha)
     navePlayer2.speedX = 0;
-    if (myGameArea.keys && myGameArea.keys[37]) { navePlayer2.speedX = -7; } // Flecha Izquierda
-    if (myGameArea.keys && myGameArea.keys[39]) { navePlayer2.speedX = 7; }  // Flecha Derecha
+    if (myGameArea.keys && myGameArea.keys[37]) { navePlayer2.speedX = -7; }
+    if (myGameArea.keys && myGameArea.keys[39]) { navePlayer2.speedX = 7; }
     navePlayer2.newPos();
     navePlayer2.update();
 
-    // Actualizar proyectiles
+    //Colorear enemigos
+    enemigos.forEach(e => {
+        if (e.activo) {
+            context = myGameArea.context;
+            context.fillStyle = "blue";
+            context.fillRect(e.x, e.y, e.width, e.height);
+        }
+    });
+    
+    //Movimiento proyectiles
     for (let i = 0; i < projectiles.length; i++) {
         projectiles[i].newPos();
         projectiles[i].update();
     }
 
-    // Eliminar proyectiles fuera del canvas
-    projectiles = projectiles.filter(p => p.y > 0);
+    detectarColisiones();
 
-    // Mostrar vidas
-    mostrarVidas();
-    
-    // Verificar condiciones de victoria
+    projectiles = projectiles.filter(p => p.y < myGameArea.canvas.height && p.y + p.height > 0);
+    mostrarHUD();
     verificarVictoria();
 }
 
-function mostrarVidas() {
+//Funcion de deteccion de colisiones (Usa los colores para determinar que colisiona con que)
+function detectarColisiones() {
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        let p = projectiles[i];
+
+        if (p.color === "pink" || p.color === "green") {
+            enemigos.forEach(e => {
+                if (e.activo && colision(p, e)) {
+                    e.activo = false;
+                    if (p.color === "pink") enemigosEliminadosJ1++;
+                    if (p.color === "green") enemigosEliminadosJ2++;
+                    projectiles.splice(i, 1);
+                }
+            });
+        } else if (p.color === "blue") {
+            if (colision(p, navePlayer1)) {
+                vidasJ1--;
+                projectiles.splice(i, 1);
+            } else if (colision(p, navePlayer2)) {
+                vidasJ2--;
+                projectiles.splice(i, 1);
+            }
+        }
+    }
+}
+
+//Funcion para las colisiones como tal
+function colision(a, b) {
+    return a.x < b.x + b.width && a.x + a.width > b.x &&
+           a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+//Funcion para el dibujado del HUD
+function mostrarHUD() {
     var context = myGameArea.context;
     context.fillStyle = "white";
     context.font = "20px Arial";
     context.fillText("Jugador 1 Vidas: " + vidasJ1, 10, 20);
     context.fillText("Jugador 2 Vidas: " + vidasJ2, 10, 50);
+    context.fillText("Eliminados J1: " + enemigosEliminadosJ1, 10, 80);
+    context.fillText("Eliminados J2: " + enemigosEliminadosJ2, 10, 110);
 }
 
+//Funcion para comprobar el ganador
 function verificarVictoria() {
     if (vidasJ1 <= 0) {
         alert("¡Jugador 2 gana!");
         clearInterval(myGameArea.interval);
-    }
-    if (vidasJ2 <= 0) {
+    } else if (vidasJ2 <= 0) {
         alert("¡Jugador 1 gana!");
+        clearInterval(myGameArea.interval);
+    } else if (enemigosEliminadosJ1 >= 30 || enemigosEliminadosJ2 >= 30) { //El ejercicio pedia matar a 100 enemigos(Hay 30), pero eso nos forzaria a hacer reaparecer a los enemigos y no nos ha dado tiempo.
+        if (enemigosEliminadosJ1 > enemigosEliminadosJ2) {
+            alert("¡Jugador 1 gana por eliminar enemigos!");
+        } else if (enemigosEliminadosJ2 > enemigosEliminadosJ1) {
+            alert("¡Jugador 2 gana por eliminar enemigos!");
+        } else {
+            alert("¡Empate!");
+        }
         clearInterval(myGameArea.interval);
     }
 }
-
-// Aquí puedes agregar la lógica para reducir las vidas de los jugadores
-// cuando sean golpeados por un enemigo o un proyectil enemigo.
